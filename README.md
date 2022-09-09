@@ -8,9 +8,13 @@ Click [here](https://dev6346.d2pp1mprmyzu7c.amplifyapp.com/) to go to my WEB App
 Here is the URL: [https://dev6346.d2pp1mprmyzu7c.amplifyapp.com/](https://dev6346.d2pp1mprmyzu7c.amplifyapp.com/) 
 
 
-**Architecture**
+**Architecture in AWS Cloud**
 
 ![Api Architecture](https://user-images.githubusercontent.com/42775479/189339808-f34bcc39-e142-4782-9147-fd5fe69de9e2.jpg)
+
+**IAC**    -->  https://github.com/ramer479/AwsServerlessApi/tree/main/src/AWS%20Cloudformation%20Templates
+             Lambda, DynamoDB, Api Gateway creation, Api Methods/DeploymentID
+*FrontEnd* --> Uses Html, JavaScript and CSS
 
 **How does Application Work ?**
 
