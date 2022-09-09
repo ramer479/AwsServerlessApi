@@ -1,0 +1,241 @@
+################################ Web App for Word Replacement CFT ################################
+################################      LAMBDA , DYNAMODB           ################################
+################################    API GATEWAY , AMPLIFY         ################################
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: "AWS::Serverless-2016-10-31"
+Description: An AWS Serverless Application for Word Replacement 
+################################          PARAMETERS              ################################
+
+Parameters:
+ ENV:
+  Type: String
+  Description: env
+  Default: prod
+ 
+ LambdaRoleName:
+  Type: String
+  Default: arn:aws:iam::576011801852:role/service-role/Raghuramlambda-role-914a4xsw
+ 
+ LambdaSGID:
+  Type: String
+  Default: TBD
+ 
+ ApplicationOwner:
+  Type: String
+  Default: Raghuram
+
+ ApplicationName:
+  Type: String
+  Default: WordReplacement  
+  
+ CostID:
+  Type: String
+  Default: 123A
+  
+################################          RESOURCES               ################################  
+Resources:
+################################           LAMBDA                 ################################
+
+ PostApiWordReplacementCFT:
+  Type: AWS::Lambda::Function
+  Properties:
+   Handler: 'index.lambda_handler'
+   Code:
+    ZipFile: !Sub |
+    
+        import json
+        import boto3
+        from time import gmtime, strftime
+        import re
+
+        dynamo = boto3.resource("dynamodb")
+        now = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+
+        def get_dynamo_items(table_name):
+            table = dynamo.Table(table_name)
+            response = table.scan()
+            return response
+
+        def put_dynamo_items(table_name, inputString, outputString):
+            table = dynamo.Table('ApiManage')
+            response = table.put_item(
+                Item = {
+                    'Input': inputString,
+                    'Output': outputString,
+                    'TimeStamp': now
+                    }
+                )
+
+        def lambda_handler(event, context):
+            # TODO implement
+            
+            # Get Keywords and corresponding replacement Keywords from the Dynamo Lookup Table 
+            response = get_dynamo_items("LookupTable")
+            
+            response_items = response['Items']
+            ipString = event['inputString']
+            
+            dict = {}
+            for item in response_items :
+                dict[item['ID']] = item['Value']
+            
+            print(dict)
+            
+            opString = ipString
+            for item in response_items :
+                pattern = re.compile(item['ID'],re.IGNORECASE)
+                opString = pattern.sub(item['Value'],opString)
+                #opString = opString.replace(item['ID'],item['Value'])
+            
+            print(opString)
+            
+            put_dynamo_items("ApiManage",ipString, opString)
+            
+            return {
+                'statusCode' : 200,
+                'body' : opString
+                } 
+    
+   Description: Post Api for WordReplacement
+   FunctionName: PostApiWordReplacementCFT
+   Role: !Ref LambdaRoleName
+   Timeout: 900
+   MemorySize: 128
+   Runtime: python3.9
+   
+   Tags:
+     - Key: CostCenter
+       Value: !Ref CostID
+     - Key: ApplicationOwner
+       Value: !Ref ApplicationOwner
+     - Key: Application
+       Value: !Ref ApplicationName
+       
+
+ RecordAddToLookupCFT:
+  Type: AWS::Lambda::Function
+  Properties:
+   Handler: 'index.lambda_handler'
+   Code:
+    ZipFile: !Sub |
+    
+        import json
+        import boto3
+        from time import gmtime, strftime
+
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table('LookupTable')
+        # store the current time in a human readable format in a variable
+        now = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+
+        def lambda_handler(event, context):
+        # extract values from the event object we got from the Lambda service and store in a variable
+            keyWord = event['keyWord'] 
+            repWord = event['repWord']
+        # write name and time to the DynamoDB table using the object we instantiated and save response in a variable
+            response = table.put_item(
+                Item={
+                    'ID': keyWord,
+                    'Value':repWord
+                    })
+        # return a properly formatted JSON object
+            return {
+                'statusCode': 200,
+                'body': 'Record has been Added to Lookup Table'
+            }
+    
+   Description: Post Api for WordReplacement
+   FunctionName: RecordAddToLookupCFT
+   Role: !Ref LambdaRoleName
+   Timeout: 900
+   MemorySize: 128
+   Runtime: python3.9
+   
+   Tags:
+     - Key: CostCenter
+       Value: !Ref CostID
+     - Key: ApplicationOwner
+       Value: !Ref ApplicationOwner
+     - Key: Application
+       Value: !Ref ApplicationName
+       
+################################           DYNAMODB               ################################
+
+ LookupTableCFT: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "ID"
+          KeyType: "HASH"
+      TableName: "LookupTableCFT"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+        
+      Tags:
+         - Key: CostCenter
+           Value: !Ref CostID
+         - Key: ApplicationOwner
+           Value: !Ref ApplicationOwner
+         - Key: Application
+           Value: !Ref ApplicationName
+           
+ ApiManageCFT: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "Input"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "Input"
+          KeyType: "HASH"
+      TableName: "ApiManageCFT"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+        
+      Tags:
+         - Key: CostCenter
+           Value: !Ref CostID
+         - Key: ApplicationOwner
+           Value: !Ref ApplicationOwner
+         - Key: Application
+           Value: !Ref ApplicationName 
+           
+################################           REST API               ################################
+
+ ApiGatewayRestApi:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+        Name: "PostApiWordReplacementCFT"
+        Description: "I am Building an API that will use a string as input and does a find and replace for certain words and outputs the result. For example: replace Google for Google©. ​"
+        ApiKeySourceType: "HEADER"
+        EndpointConfiguration: 
+            Types: 
+              - "REGIONAL"
+
+################################           Amplify APP               ################################
+
+ WordReplacementCFT: 
+    Type: AWS::Amplify::App
+    Properties: 
+      AccessToken: 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
+      CustomHeaders: ""
+      Description: Word Replacement Application AMPLIFY App 
+      Name: WordReplacementCFT
+      Repository: https://github.com/ramer479/AwsServerlessApi.git
+      
+      Tags:
+        - Key: CostCenter
+          Value: !Ref CostID
+        - Key: ApplicationOwner
+          Value: !Ref ApplicationOwner
+        - Key: Application
+          Value: !Ref ApplicationName 

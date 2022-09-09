@@ -1,0 +1,140 @@
+################################ Web App for Word Replacement CFT ################################
+################################    API GATEWAY , AMPLIFY         ################################
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: "AWS::Serverless-2016-10-31"
+Description: An AWS Serverless Application for Word Replacement 
+################################          PARAMETERS              ################################
+
+Parameters:
+ ENV:
+  Type: String
+  Description: env
+  Default: prod
+ 
+ LambdaRoleName:
+  Type: String
+  Default: arn:aws:iam::576011801852:role/service-role/Raghuramlambda-role-914a4xsw
+ 
+ LambdaSGID:
+  Type: String
+  Default: TBD
+ 
+ ApplicationOwner:
+  Type: String
+  Default: Raghuram
+
+ ApplicationName:
+  Type: String
+  Default: WordReplacement  
+  
+ CostID:
+  Type: String
+  Default: 123A
+  
+ ApiGatewayRestApi:
+  Type: String
+  Default: 1y3s9f78qk
+  
+################################          RESOURCES               ################################  
+Resources:
+################################           REST API               ################################
+
+ Deployment: 
+    Type: AWS::ApiGateway::Deployment
+    Properties: 
+        RestApiId: !Ref ApiGatewayRestApi
+        Description: "My deployment"
+        StageName: "Prod"
+
+ ApiGatewayMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        ResourceId: "ysvveagw6a"
+        HttpMethod: "PUT"
+        AuthorizationType: "NONE"
+        ApiKeyRequired: false
+        RequestParameters: {}
+        MethodResponses: 
+          - 
+            ResponseModels: 
+                "application/json": "Empty"
+            ResponseParameters: 
+                "method.response.header.Access-Control-Allow-Origin": false
+            StatusCode: "200"
+        Integration: 
+            CacheNamespace: "ysvveagw6a"
+            ContentHandling: "CONVERT_TO_TEXT"
+            IntegrationHttpMethod: "POST"
+            IntegrationResponses: 
+              - 
+                ResponseParameters: 
+                    "method.response.header.Access-Control-Allow-Origin": "'*'"
+                StatusCode: "200"
+            PassthroughBehavior: "WHEN_NO_MATCH"
+            TimeoutInMillis: 29000
+            Type: "AWS"
+            Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:RecordAddToLookup/invocations"
+
+ ApiGatewayMethod2:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        ResourceId: "ysvveagw6a"
+        HttpMethod: "POST"
+        AuthorizationType: "NONE"
+        ApiKeyRequired: false
+        RequestParameters: {}
+        MethodResponses: 
+          - 
+            ResponseModels: 
+                "application/json": "Empty"
+            ResponseParameters: 
+                "method.response.header.Access-Control-Allow-Origin": false
+            StatusCode: "200"
+        Integration: 
+            CacheNamespace: "ysvveagw6a"
+            ContentHandling: "CONVERT_TO_TEXT"
+            IntegrationHttpMethod: "POST"
+            IntegrationResponses: 
+              - 
+                ResponseParameters: 
+                    "method.response.header.Access-Control-Allow-Origin": "'*'"
+                StatusCode: "200"
+            PassthroughBehavior: "WHEN_NO_MATCH"
+            TimeoutInMillis: 29000
+            Type: "AWS"
+            Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:PostApiWordReplacement/invocations"
+
+ ApiGatewayMethod3:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        ResourceId: "ysvveagw6a"
+        HttpMethod: "OPTIONS"
+        AuthorizationType: "NONE"
+        ApiKeyRequired: false
+        RequestParameters: {}
+        MethodResponses: 
+          - 
+            ResponseModels: 
+                "application/json": "Empty"
+            ResponseParameters: 
+                "method.response.header.Access-Control-Allow-Headers": false
+                "method.response.header.Access-Control-Allow-Methods": false
+                "method.response.header.Access-Control-Allow-Origin": false
+            StatusCode: "200"
+        Integration: 
+            CacheNamespace: "ysvveagw6a"
+            IntegrationResponses: 
+              - 
+                ResponseParameters: 
+                    "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                    "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST,PUT'"
+                    "method.response.header.Access-Control-Allow-Origin": "'*'"
+                StatusCode: "200"
+            PassthroughBehavior: "WHEN_NO_MATCH"
+            RequestTemplates: 
+                "application/json": "{\"statusCode\": 200}"
+            TimeoutInMillis: 29000
+            Type: "MOCK"
