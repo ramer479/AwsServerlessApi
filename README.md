@@ -14,7 +14,8 @@ Here is the URL: [https://dev6346.d2pp1mprmyzu7c.amplifyapp.com/](https://dev634
 
 **IAC**    -->  https://github.com/ramer479/AwsServerlessApi/tree/main/src/AWS%20Cloudformation%20Templates
              Lambda, DynamoDB, Api Gateway creation, Api Methods/DeploymentID
-*FrontEnd* --> Uses Html, JavaScript and CSS
+
+**FrontEnd** --> Uses Html, JavaScript and CSS
 
 **How does Application Work ?**
 
